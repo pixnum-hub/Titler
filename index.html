@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1C1E22">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/favicon.ico">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<title>Titler</title>
+<style>  :root{--paper:#FAF7F0; --ink:#1A1A1A; --ink-soft:#5A5650; --accent:#C0392B; --card:#FFFFFF; --card-line:#E4DFD2; --warn:#B5541B; --shadow:0 1px 0 rgba(0,0,0,.06);}
+  [data-theme="dark"]{--paper:#1C1E22; --ink:#F3F1EC; --ink-soft:#A9A6A0; --accent:#E8A33D; --card:#24262B; --card-line:#34363C; --warn:#E8A33D; --shadow:0 1px 0 rgba(0,0,0,.4);}
+  [data-theme="oled"]{--paper:#000000; --ink:#F5F5F5; --ink-soft:#8C8C8C; --accent:#4FD1C5; --card:#0A0A0A; --card-line:#1F1F1F; --warn:#4FD1C5; --shadow:none;}
+  [data-theme="hc"]{--paper:#000000; --ink:#FFFFFF; --ink-soft:#FFFFFF; --accent:#FFD400; --card:#000000; --card-line:#FFFFFF; --warn:#FFD400; --shadow:none;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--paper); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; min-height:100vh; display:flex; flex-direction:column; transition:background .2s,color .2s;}
+  .wrap{max-width:640px; margin:0 auto; width:100%; padding:0 18px; flex:1; display:flex; flex-direction:column;}
+  header{padding:22px 0 10px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  .brand{display:flex; flex-direction:column;}
+  .kicker{font-size:7px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); font-weight:700; margin-top:2px;}
+  h1{margin:2px 0 0; font-size:26px; line-height:1.15; letter-spacing:-.01em;}
+  .sub{margin-top:6px; color:var(--ink-soft); font-size:14px; max-width:46ch;}
+  .themebar{display:flex; gap:6px; flex-shrink:0;}
+  .theme-btn{width:30px; height:30px; border-radius:50%; border:1px solid var(--card-line); cursor:pointer; padding:0;}
+  .theme-btn[data-t="light"]{background:#FAF7F0;}
+  .theme-btn[data-t="dark"]{background:#1C1E22;}
+  .theme-btn[data-t="oled"]{background:#000;}
+  .theme-btn[data-t="hc"]{background:#000; box-shadow:inset 0 0 0 2px #FFD400;}
+  .theme-btn.active{outline:2px solid var(--accent); outline-offset:2px;}
+  .desk{background:var(--card); border:1px solid var(--card-line); border-radius:14px; padding:16px; margin-top:14px; box-shadow:var(--shadow);}
+  label{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:700;}
+  .row{display:flex; gap:8px; margin-top:8px;}
+  .filters{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px;}
+  .filters.single{grid-template-columns:1fr;}
+  .field{display:flex; flex-direction:column; gap:4px;}
+  .field label{font-size:10px;}
+  .field-inline{display:flex; flex-direction:column; gap:4px; flex-shrink:0;}
+  .field-inline label{font-size:10px; white-space:nowrap;}
+  .check-wrap{display:flex; align-items:center; gap:6px; font-size:13px; text-transform:none; color:var(--ink); font-weight:500; padding:12px 0 0;}
+  .check-wrap input{width:16px; height:16px;}
+  input[type="text"]{flex:1; min-width:0; width:100%; background:transparent; border:1px solid var(--card-line); border-radius:8px; padding:12px; font-size:16px; color:var(--ink); font-family:inherit;}
+  input[type="text"]:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  select{width:100%; background:var(--card); color:var(--ink); border:1px solid var(--card-line); border-radius:8px; padding:12px 10px; font-size:14px; font-family:inherit;}
+  .actions{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  button{font-family:inherit; cursor:pointer; border-radius:8px; font-weight:700;}
+  .btn-primary{flex:1; min-width:140px; background:var(--accent); color:#111; border:none; padding:13px 14px; font-size:15px;}
+  [data-theme="hc"] .btn-primary{color:#000;}
+  .btn-primary:active{transform:translateY(1px);}
+  .btn-primary:disabled{opacity:.5;}
+  .btn-ghost{background:transparent; color:var(--ink); border:1px solid var(--card-line); padding:13px 14px; font-size:14px;}
+  .btn-ghost.small{padding:9px 12px; font-size:13px; font-weight:600;}
+  .status{font-size:12px; color:var(--ink-soft); margin-top:8px; min-height:16px;}
+  .feed{margin:18px 0 8px; display:flex; flex-direction:column; gap:10px;}
+  .card{background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:14px; box-shadow:var(--shadow); position:relative;}
+  .card-top{display:flex; justify-content:space-between; align-items:center; gap:8px;}
+  .eyebrow{font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); font-weight:700;}
+  .chars{color:var(--ink-soft); text-transform:none; letter-spacing:0; font-weight:600;}
+  .chars.warn{color:var(--warn);}
+  .star{background:transparent; border:none; font-size:19px; color:var(--ink-soft); cursor:pointer; padding:0 2px; line-height:1;}
+  .star.active{color:var(--accent);}
+  .card-icons{display:flex; gap:2px; align-items:center;}
+  .icon-btn{background:transparent; border:none; font-size:17px; color:var(--ink-soft); cursor:pointer; padding:0 3px; line-height:1;}
+  .card p{margin:8px 0 10px; font-size:16.5px; line-height:1.35; font-weight:600;}
+  .card p.meta{font-size:12.5px; font-weight:400; font-style:italic; color:var(--ink-soft); margin:-4px 0 10px;}
+  .copy{background:transparent; border:1px solid var(--card-line); color:var(--ink-soft); font-size:12px; padding:6px 10px; border-radius:6px;}
+  .copy.copied{color:var(--accent); border-color:var(--accent);}
+  .empty{color:var(--ink-soft); font-size:14px; text-align:center; padding:30px 10px;}
+  .manual{position:fixed; left:12px; right:12px; bottom:12px; max-width:616px; margin:0 auto; background:var(--card); border:1px solid var(--card-line); border-radius:10px; padding:12px; box-shadow:0 4px 24px rgba(0,0,0,.35); z-index:50;}
+  .manual textarea{width:100%; min-height:64px; background:transparent; color:var(--ink); border:1px solid var(--card-line); border-radius:8px; padding:8px; font-family:inherit; font-size:14px; resize:vertical;}
+  .manual-actions{display:flex; justify-content:space-between; align-items:center; margin-top:8px; font-size:12px; color:var(--ink-soft);}
+  .manual-actions button{background:transparent; border:1px solid var(--card-line); color:var(--ink); padding:6px 10px; border-radius:6px; font-size:12px; font-weight:600;}
+  .saved{margin:4px 0 24px;}
+  .saved-head{font-size:12px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-soft); font-weight:700; margin-bottom:8px;}
+  .saved-item{display:flex; justify-content:space-between; align-items:center; gap:8px; background:var(--card); border:1px solid var(--card-line); border-radius:8px; padding:10px 12px; margin-bottom:8px; font-size:14px;}
+  .saved-item span{flex:1;}
+  .saved-item button{background:transparent; border:none; color:var(--ink-soft); font-size:13px; cursor:pointer; white-space:nowrap;}
+  .install-banner{position:fixed; top:0; left:0; right:0; background:var(--accent); color:#111; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:13px; font-weight:600; z-index:60;}
+  [data-theme="hc"] .install-banner{color:#000;}
+  .install-banner button{background:transparent; border:1px solid rgba(0,0,0,.35); color:inherit; padding:6px 10px; border-radius:6px; font-size:12px; margin-left:6px; font-weight:700;}
+  .cal-date{font-size:11px; color:var(--accent); font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:.06em;}
+  .dup-flag{color:var(--warn); font-size:13px; margin-left:4px;}
+  .stats-line{font-size:13px; color:var(--ink-soft); line-height:1.6;}
+  .slug{font-size:11px; color:var(--ink-soft); font-family:monospace; margin:-4px 0 8px; word-break:break-all;}
+  .strength{display:flex; align-items:center; gap:6px; margin:4px 0 8px;}
+  .strength-bar{flex:1; height:5px; background:var(--card-line); border-radius:3px; overflow:hidden;}
+  .strength-bar span{display:block; height:100%; border-radius:3px;}
+  .strength-label{font-size:10px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft); font-weight:700; white-space:nowrap;}
+  mark{background:transparent; color:var(--accent); font-weight:800; padding:0;}
+  .altline{font-size:13px; color:var(--ink-soft); margin:-4px 0 10px; padding-top:8px; border-top:1px dashed var(--card-line);}
+  .altline b{color:var(--ink); font-weight:600;}
+  .hist-item{cursor:pointer;}
+  .hist-item:hover{border-color:var(--accent);}
+  input[type="range"]{width:100%;}
+  .range-labels{display:flex; justify-content:space-between; font-size:10px; color:var(--ink-soft); margin-top:2px;}
+  footer{text-align:center; padding:16px 18px 22px; color:var(--ink-soft); font-size:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; border-top:1px solid var(--card-line);}
+  @media (max-width:380px){ h1{font-size:22px;} .kicker{font-size:6px;} }</style>
+</head>
+<body data-theme="dark">
+<div id="installBanner" class="install-banner" style="display:none;">
+  <span id="installMsg">Install Titler for quick access and offline use.</span>
+  <div>
+    <button onclick="installApp()">Install</button>
+    <button onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <h1>Titler</h1>
+      <span class="kicker">Article Title Generator</span>
+    </div>
+    <div class="themebar">
+      <button class="theme-btn" data-t="light" title="Light" onclick="setTheme('light')"></button>
+      <button class="theme-btn" data-t="dark" title="Dark" onclick="setTheme('dark')"></button>
+      <button class="theme-btn" data-t="oled" title="OLED True Black" onclick="setTheme('oled')"></button>
+      <button class="theme-btn" data-t="hc" title="High Contrast" onclick="setTheme('hc')"></button>
+    </div>
+  </header>
+  <div class="desk">
+    <label for="topic">Topic (comma-separate for multiple)</label>
+    <div class="row">
+      <input id="topic" type="text" placeholder="e.g. yoga, coffee, SEO" maxlength="120" autocomplete="off" list="topicSuggestions">
+      <datalist id="topicSuggestions"><option value="personal finance"><option value="home cooking"><option value="digital marketing"><option value="fitness at home"><option value="mental wellness"><option value="freelancing"><option value="travel on a budget"><option value="productivity hacks"><option value="parenting tips"><option value="sustainable living"><option value="remote work"><option value="skincare routine"><option value="small business growth"><option value="photography basics"><option value="gardening for beginners"><option value="pet care"><option value="career change"><option value="minimalist lifestyle"><option value="content creation"><option value="artificial intelligence"></datalist>
+      <div class="field-inline">
+        <label for="count">Count</label>
+        <select id="count" title="How many headlines" style="max-width:64px;"><option value="6">6</option><option value="8" selected>8</option><option value="12">12</option></select>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="style">Style</label>
+        <select id="style" title="Style"><option value="any">Any style</option><option value="ad">Advanced</option><option value="al">Alternatives</option><option value="an">Analysis</option><option value="au">Automation</option><option value="ba">Before &amp; After</option><option value="bs">Behind the Scenes</option><option value="bg">Beginner</option><option value="bm">Benchmark</option><option value="bd">Budget-Friendly</option><option value="bg2">Buyer's Guide</option><option value="cs">Case Study</option><option value="ck">Checklist</option><option value="cs2">Cheat Sheet</option><option value="cp">Comparison</option><option value="cm">Community Spotlight</option><option value="c">Curiosity</option><option value="dl">Deadline / Fast-Track</option><option value="dc">Deep Cuts</option><option value="df">Definition</option><option value="el">ELI5</option><option value="et">Ethics</option><option value="fq">FAQ</option><option value="fp">Fresh Perspective</option><option value="gl">Glossary</option><option value="hb">Habit Building</option><option value="h">How-To</option><option value="ia">Interview / Q&amp;A</option><option value="l">Listicle</option><option value="wn">Mistakes &amp; Warnings</option><option value="mt">Motivational</option><option value="mb">Myth-Busting</option><option value="nw">News &amp; Trends</option><option value="op">Opinion</option><option value="st">Personal Story</option><option value="pd">Prediction</option><option value="q">Question</option><option value="rf">Red Flags</option><option value="rq">Reader Q&amp;A</option><option value="rs">Resource Roundup</option><option value="rv">Review</option><option value="rk">Risk Assessment</option><option value="sz">Seasonal</option><option value="dt">Statistics</option><option value="sp">Step-by-Step</option><option value="ss">Success Story</option><option value="tm">Team / Collaborative</option><option value="tp">Template</option><option value="tk">Toolkit</option><option value="tl">Timeline</option><option value="yr">Year-Round</option></select>
+      </div>
+      <div class="field">
+        <label for="length">Length</label>
+        <select id="length" title="Length"><option value="any">Any length</option><option value="brief">Brief (30–40)</option><option value="compact">Compact (40–50)</option><option value="descriptive">Descriptive (95–110)</option><option value="detailed">Detailed (110–130)</option><option value="extended">Extended (80–95)</option><option value="long">Long (&gt;50)</option><option value="maximal">Maximal (150+)</option><option value="medium">Medium (50–65)</option><option value="short">Short (&le;50)</option><option value="standard">Standard (65–80)</option><option value="ultrashort">Ultra Short (&lt;30)</option><option value="verylong">Very Long (130–150)</option></select>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="tone">Tone</label>
+        <select id="tone" title="Tone"><option value="any">Any tone</option><option value="academic">Academic</option><option value="analytical">Analytical</option><option value="authoritative">Authoritative</option><option value="blunt">Blunt</option><option value="bold">Bold</option><option value="casual">Casual</option><option value="confident">Confident</option><option value="conversational">Conversational</option><option value="curious">Curious</option><option value="edgy">Edgy</option><option value="empathetic">Empathetic</option><option value="encouraging">Encouraging</option><option value="formal">Formal</option><option value="friendly">Friendly</option><option value="humorous">Humorous</option><option value="inspirational">Inspirational</option><option value="minimalist">Minimalist</option><option value="nostalgic">Nostalgic</option><option value="playful">Playful</option><option value="poetic">Poetic</option><option value="professional">Professional</option><option value="provocative">Provocative</option><option value="reassuring">Reassuring</option><option value="sarcastic">Sarcastic</option><option value="skeptical">Skeptical</option><option value="storytelling">Storytelling</option><option value="urgent">Urgent</option><option value="whimsical">Whimsical</option><option value="witty">Witty</option></select>
+      </div>
+      <div class="field">
+        <label for="category">Category</label>
+        <select id="category" title="Category"></select>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="exclude">Exclude words</label>
+        <input id="exclude" type="text" placeholder="comma separated" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="metaToggle">Meta description</label>
+        <label class="check-wrap"><input type="checkbox" id="metaToggle"> Add SEO blurb</label>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="lang">Language</label>
+        <select id="lang" title="Language"><option value="en">English</option><option value="hi">Hindi</option><option value="bn">Bengali</option></select>
+      </div>
+      <div class="field">
+        <label for="calSpan">Calendar plan</label>
+        <select id="calSpan" title="Calendar span"><option value="0">Off</option><option value="7">7-day plan</option><option value="30">30-day plan</option></select>
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="calStart">Plan start date</label>
+        <input type="date" id="calStart">
+      </div>
+      <div class="field">
+        <label for="csvFile">Import topics</label>
+        <button class="btn-ghost small" type="button" onclick="document.getElementById('csvFile').click()">Choose CSV</button>
+        <input type="file" id="csvFile" accept=".csv,text/csv" style="display:none" onchange="handleCsv(event)">
+      </div>
+    </div>
+    <div class="filters">
+      <div class="field">
+        <label for="intensity">Power-word intensity</label>
+        <input type="range" id="intensity" min="0" max="2" value="0" step="1">
+        <div class="range-labels"><span>Mild</span><span>Punchy</span><span>Clickbait</span></div>
+      </div>
+      <div class="field">
+        <label for="caseStyle">Capitalization</label>
+        <select id="caseStyle" title="Capitalization"><option value="title">Title Case</option><option value="sentence">Sentence case</option><option value="upper">ALL CAPS</option></select>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" onclick="generate()">Generate headlines</button>
+      <button class="btn-ghost" onclick="copyAll()">Copy all</button>
+      <button class="btn-ghost" onclick="resetAll()">Reset</button>
+    </div>
+    <div class="actions">
+      <button class="btn-ghost small" onclick="exportTxt()">Export .txt</button>
+      <button class="btn-ghost small" onclick="exportCsv()">Export .csv</button>
+      <button class="btn-ghost small" onclick="shareLink()">Share link</button>
+      <button class="btn-ghost small" onclick="toggleHistory()">History</button>
+    </div>
+    <div class="status" id="status">&nbsp;</div>
+  </div>
+  <div class="feed" id="feed">
+    <div class="empty">Your generated headlines will land here.</div>
+  </div>
+  <div class="saved" id="savedSection" style="display:none;">
+    <div class="saved-head">Saved (<span id="savedCount">0</span>)</div>
+    <div id="savedList"></div>
+  </div>
+  <div class="saved" id="statsPanel" style="display:none;"></div>
+  <div class="saved" id="historyPanel" style="display:none;">
+    <div class="saved-head">Recent Batches</div>
+    <div id="historyList"></div>
+  </div>
+</div>
+<footer>
+  <div>© <span id="year"></span> Manik Roy. All Rights Reserved.</div>
+</footer>
+<div class="manual" id="manualBox" style="display:none;">
+  <textarea id="manualArea" readonly></textarea>
+  <div class="manual-actions">
+    <span id="manualHint">Clipboard blocked — text selected</span>
+    <button onclick="closeManual()">Close</button>
+  </div>
+</div>
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+function setTheme(t){
+  document.body.setAttribute('data-theme', t);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active', b.dataset.t === t));
+}
+setTheme('dark');
+const CATEGORIES = {
+  general:{label:'General', words:['Strategy','Habit','Skill','Journey','Mindset','Craft','Blueprint','Momentum','Story','Ritual']}, tech:{label:'Tech', words:['Workflow','Automation','Platform','Algorithm','Interface','Framework','Pipeline','Prototype','Network','Upgrade']},
+  food:{label:'Food', words:['Flavor','Recipe','Kitchen','Palate','Pantry','Harvest','Spice','Texture','Aroma','Craft']}, travel:{label:'Travel', words:['Journey','Itinerary','Adventure','Destination','Wanderlust','Route','Escape','Horizon','Passport','Discovery']},
+  finance:{label:'Finance', words:['Budget','Portfolio','Wealth','Savings','Investment','Ledger','Equity','Cashflow','Asset','Margin']}, health:{label:'Health', words:['Wellness','Vitality','Balance','Recovery','Nutrition','Stamina','Resilience','Routine','Energy','Mindfulness']},
+  business:{label:'Business', words:['Enterprise','Leadership','Growth','Startup','Operations','Vision','Scale','Venture']}, marketing:{label:'Marketing', words:['Campaign','Branding','Audience','Funnel','Engagement','Outreach','Positioning','Conversion']},
+  fashion:{label:'Fashion', words:['Style','Trend','Wardrobe','Silhouette','Couture','Ensemble','Aesthetic','Statement']}, beauty:{label:'Beauty', words:['Skincare','Glow','Routine','Radiance','Complexion','Regimen','Elegance','Charm']},
+  fitness:{label:'Fitness', words:['Strength','Endurance','Workout','Discipline','Physique','Stamina','Training','Progress']}, parenting:{label:'Parenting', words:['Nurture','Milestone','Bonding','Guidance','Patience','Family','Growth','Discipline']},
+  education:{label:'Education', words:['Curriculum','Learning','Knowledge','Classroom','Mentorship','Literacy','Insight','Growth']}, photography:{label:'Photography', words:['Composition','Exposure','Frame','Lighting','Aperture','Portrait','Perspective','Focus']},
+  music:{label:'Music', words:['Melody','Rhythm','Harmony','Composition','Groove','Tempo','Lyric','Sound']}, gaming:{label:'Gaming', words:['Gameplay','Strategy','Level','Quest','Arena','Challenge','Immersion','Victory']},
+  sports:{label:'Sports', words:['Athlete','Championship','Endurance','Teamwork','Competition','Momentum','Rivalry','Triumph']}, realestate:{label:'Real Estate', words:['Property','Investment','Listing','Market','Equity','Valuation','Mortgage','Portfolio']},
+  automotive:{label:'Automotive', words:['Engine','Performance','Horsepower','Design','Torque','Handling','Upgrade','Drive']}, pets:{label:'Pets', words:['Companion','Care','Bond','Training','Wellness','Loyalty','Playtime','Comfort']},
+  diy:{label:'DIY & Crafts', words:['Craft','Project','Blueprint','Workshop','Handmade','Build','Toolkit','Creativity']}, gardening:{label:'Gardening', words:['Bloom','Harvest','Soil','Growth','Foliage','Season','Bounty','Nurture']},
+  art:{label:'Art', words:['Canvas','Palette','Expression','Vision','Composition','Medium','Muse','Craft']}, books:{label:'Books', words:['Narrative','Chapter','Prose','Plot','Character','Story','Author','Voice']},
+  movies:{label:'Movies & TV', words:['Cinema','Screenplay','Scene','Director','Narrative','Drama','Character','Story']}, science:{label:'Science', words:['Discovery','Theory','Research','Experiment','Innovation','Evidence','Hypothesis','Insight']},
+  history:{label:'History', words:['Legacy','Era','Archive','Heritage','Chronicle','Milestone','Empire','Timeline']}, politics:{label:'Politics', words:['Policy','Governance','Debate','Reform','Democracy','Campaign','Legislation','Diplomacy']},
+  environment:{label:'Environment', words:['Sustainability','Ecosystem','Climate','Conservation','Renewable','Habitat','Balance','Stewardship']}, spirituality:{label:'Spirituality', words:['Mindfulness','Awakening','Balance','Serenity','Reflection','Harmony','Presence','Wisdom']},
+  productivity:{label:'Productivity', words:['Focus','Efficiency','Workflow','Momentum','Discipline','Routine','Clarity','Output']}, weddings:{label:'Weddings', words:['Ceremony','Celebration','Vows','Elegance','Romance','Tradition']},
+  interiordesign:{label:'Interior Design', words:['Decor','Ambiance','Layout','Palette','Furnishing','Aesthetic']}, career:{label:'Career', words:['Promotion','Resume','Networking','Ambition','Growth','Opportunity']},
+  relationships:{label:'Relationships', words:['Connection','Trust','Communication','Intimacy','Bond','Partnership']}, mentalhealth:{label:'Mental Health', words:['Wellbeing','Resilience','Balance','Therapy','Calm','Awareness']},
+  crypto:{label:'Cryptocurrency', words:['Blockchain','Wallet','Token','Ledger','Decentralized','Exchange']}, ai:{label:'Artificial Intelligence', words:['Algorithm','Automation','Neural','Model','Intelligence','Innovation']},
+  language:{label:'Language Learning', words:['Fluency','Vocabulary','Grammar','Immersion','Dialect','Practice']}, outdoor:{label:'Outdoor & Camping', words:['Trail','Campfire','Wilderness','Adventure','Terrain','Expedition']},
+  coding:{label:'Coding & Programming', words:['Syntax','Debugging','Function','Repository','Algorithm','Deployment']},
+  astrology:{label:'Astrology', words:['Zodiac','Horoscope','Cosmic','Celestial','Destiny','Alignment']},
+  legal:{label:'Legal', words:['Contract','Litigation','Compliance','Statute','Clause','Precedent']}, hr:{label:'HR & Recruiting', words:['Onboarding','Culture','Retention','Interview','Talent','Policy']},
+  ecommerce:{label:'E-commerce', words:['Storefront','Checkout','Inventory','Conversion','Fulfillment','Listing']}, nonprofit:{label:'Nonprofit', words:['Mission','Donor','Volunteer','Outreach','Impact','Advocacy']},
+  events:{label:'Event Planning', words:['Venue','Itinerary','Guestlist','Logistics','Ambiance','Coordination']}, socialmedia:{label:'Social Media', words:['Engagement','Algorithm','Hashtag','Feed','Follower','Content']},
+  podcasting:{label:'Podcasting', words:['Episode','Microphone','Segment','Audience','Script','Recording']}, videography:{label:'Video & Film', words:['Footage','Editing','Frame','Lighting','Storyboard','Cut']},
+  woodworking:{label:'Woodworking', words:['Grain','Joinery','Chisel','Workshop','Finish','Craftsmanship']}, sewing:{label:'Sewing & Textiles', words:['Fabric','Pattern','Stitch','Seam','Thread','Tailoring']},
+  homeimprovement:{label:'Home Improvement', words:['Renovation','Fixture','Blueprint','Contractor','Upgrade','Durability']}, cleaning:{label:'Cleaning & Organizing', words:['Declutter','Routine','Storage','Tidiness','System','Efficiency']},
+  budgettravel:{label:'Budget Travel', words:['Backpacking','Hostel','Itinerary','Discount','Layover','Adventure']}, luxurylifestyle:{label:'Luxury Lifestyle', words:['Elegance','Exclusivity','Indulgence','Prestige','Refinement','Opulence']},
+  running:{label:'Running', words:['Pace','Endurance','Stride','Marathon','Training','Recovery']}, yoga:{label:'Yoga', words:['Balance','Breath','Flexibility','Mindfulness','Posture','Alignment']},
+  mindfulness:{label:'Mindfulness & Meditation', words:['Presence','Stillness','Awareness','Breath','Calm','Clarity']}, sleep:{label:'Sleep & Rest', words:['Routine','Recovery','Rhythm','Relaxation','Insomnia','Restoration']},
+  babycare:{label:'Baby & Newborn Care', words:['Nurture','Milestone','Routine','Comfort','Bonding','Development']}, seniorcare:{label:'Senior Care', words:['Wellbeing','Independence','Support','Comfort','Dignity','Routine']},
+  volunteering:{label:'Volunteering', words:['Community','Service','Impact','Outreach','Compassion','Contribution']}, urbanplanning:{label:'Urban Planning', words:['Infrastructure','Zoning','Density','Transit','Community','Design']},
+  robotics:{label:'Robotics', words:['Automation','Sensor','Actuator','Prototype','Engineering','Precision']}, spacetech:{label:'Space & Astronomy', words:['Orbit','Galaxy','Telescope','Exploration','Cosmos','Trajectory']},
+  fooddelivery:{label:'Food & Delivery Services', words:['Logistics','Convenience','Order','Freshness','Route','Efficiency']},
+  writing:{label:'Writing', words:['Prose','Narrative','Draft','Voice','Manuscript','Revision']}
+};
+function populateCategories(){
+  const sel = document.getElementById('category');
+  const keys = Object.keys(CATEGORIES).sort((a,b)=> CATEGORIES[a].label.localeCompare(CATEGORIES[b].label));
+  sel.innerHTML = keys.map(k => `<option value="${k}">${CATEGORIES[k].label}</option>`).join('');
+  sel.value = 'general';
+}
+populateCategories();
+const TEMPLATES = [
+["{N} {Topic} Tips You'll Wish You Knew Sooner","l"],["The Ultimate Guide to {Topic}","h"],["How {Topic} Can Transform Your {Word}","c"],["{N} {Topic} Secrets Experts Rarely Share","l"],
+["Why {Topic} Matters More Than Ever in {Year}","c"],["A Beginner's Guide to {Topic}","h"],["{N} Mistakes to Avoid With {Topic}","l"],["The Science Behind {Topic}","c"],
+["{Topic} 101: Everything You Need to Start","h"],["How to Master {Topic} in {N} Simple Steps","h"],["{N} Reasons {Topic} Is Taking Over in {Year}","l"],["The Surprising Truth About {Topic}","c"],
+["{Topic} or {Word}: Which One Wins?","q"],["From Zero to Hero: Mastering {Topic}","h"],["{N} Game-Changing {Topic} Hacks","l"],["What No One Tells You About {Topic}","c"],
+["The Complete {Topic} Checklist for {Year}","h"],["{N} {Topic} Trends Worth Watching in {Year}","l"],["How I Learned {Topic} the Hard Way","h"],["{Topic}, Explained Simply","c"],
+["The Future of {Topic}: {N} Bold Predictions","l"],["Unlocking the Power of {Topic}","c"],["{N} Proven Ways to Improve Your {Topic}","l"],["The Quiet Side of {Topic} Few People Discuss","c"],
+["{Topic} Made Easy: A Step-by-Step Guide","h"],["Everything You Thought You Knew About {Topic} Is Wrong","c"],["{N} Inspiring {Topic} Ideas to Try Today","l"],["The Do's and Don'ts of {Topic}","h"],
+["How {Word} Is Reshaping {Topic}","c"],["{Topic}: A Simple Roadmap From Beginner to Pro","h"],["{N} Underrated {Topic} Tools Worth Trying","l"],["The {Topic} Playbook: What Actually Works","h"],
+["Is {Topic} Really Worth It? An Honest Take","q"],["{N} Lessons {Topic} Taught Me","l"],["Anatomy of a Winning {Topic} Strategy","h"],["{Topic} Myths, Busted for Good","c"],
+["How to Start With {Topic} Today","h"],["{N} Expert Tips for Better {Topic}","l"],["The Rise of {Topic} in {Year}","c"],["{Topic} Meets {Word}: A Perfect Pairing","c"],
+["Why Everyone Is Talking About {Topic}","c"],["{Topic} vs {Word}: Which Should You Choose?","cp"],["{Topic} vs {Word}: A Head-to-Head Comparison","cp"],["{Topic} or {Word}? Breaking Down the Differences","cp"],
+["How {Word} Solved a Real {Topic} Problem: A Case Study","cs"],["A Real-World Case Study on {Topic}","cs"],["{N} Case Studies That Prove {Topic} Works","cs"],["{Topic} News: What's New in {Year}","nw"],
+["{N} Shifts Reshaping {Topic} Right Now","nw"],["{Topic} in {Year}: What's Trending Now","nw"],["Why {Topic} Might Be Overrated When It Comes to {Word}","op"],["My Honest Take on {Topic} and {Word}","op"],
+["{N} Opinions on {Topic} Worth Considering","op"],["The {Topic} Checklist: {N} Things to Verify","ck"],["A {N}-Point Checklist for Better {Topic}","ck"],["Don't Skip This {Topic} Checklist","ck"],
+["{N} {Topic} Mistakes That Could Cost You","wn"],["Avoid These Common {Topic} Pitfalls","wn"],["The {Topic} Mistake Almost Everyone Makes","wn"],["My {Topic} Story: What I Wish I Knew","st"],
+["A Personal Journey Through {Topic}","st"],["What {Topic} Taught Me About {Word}","st"],["What Is {Topic}? {N} Simple Definitions","df"],["{Topic} Explained: {N} Definitions and Examples","df"],
+["Understanding {Topic}: {N} Basics Defined","df"],["{Topic} in {Year}: {N} Bold Predictions","pd"],["Where {Topic} Is Headed Next","pd"],["The Future of {Topic}: What Experts Predict","pd"],
+["{Topic} Review: {N} Things to Know Before You Try It","rv"],["An Honest {Topic} Review for {Year}","rv"],["{Topic} Review: {N} Pros, {N} Cons, and a Verdict","rv"],["{N} {Topic} Myths You Need to Stop Believing","mb"],
+["Busting the Biggest Myths About {Topic}","mb"],["{Topic} for Absolute Beginners: {N} Things to Know First","bg"],["Just Starting {Topic}? Read These {N} Tips First","bg"],["{N} Advanced {Topic} Strategies for Seasoned Pros","ad"],
+["{N} Ways to Take Your {Topic} Skills to the Next Level","ad"],["{N} {Topic} Tips for {Year}: What's Changed","sz"],["{N} Seasonal {Topic} Ideas Worth Trying Now","sz"],["{N} {Topic} Questions Answered by Experts","ia"],
+["We Asked Experts About {Topic} — Here's What They Said","ia"],["{N} Best {Topic} Resources Worth Bookmarking","rs"],["The Ultimate {Topic} Resource Roundup","rs"],["{Topic} Step-by-Step: A Clear Walkthrough","sp"],
+["Follow These {N} Steps to Nail {Topic}","sp"],["{Topic}: Before and After {N} Simple Changes","ba"],["How {Topic} Transformed Before My Eyes","ba"],["{N} {Topic} Statistics That Might Surprise You","dt"],
+["What the Data Says About {Topic}","dt"],["{Topic}: Your Sign to Finally Start","mt"],["{N} Reasons to Commit to {Topic} Today","mt"],["A Deep-Dive Analysis of {Topic}","an"],
+["{Topic}: An In-Depth Analysis","an"],["Breaking Down {Topic}: {N} Key Insights","an"],["{N} Fresh Perspectives on {Topic} Worth Considering","fp"],["Rethinking {Topic} From the Ground Up: {N} Key Shifts","fp"],
+["{N} New Ways to Look at {Topic}","fp"],["{Topic} Behind the Scenes: {N} Things That Really Happen","bs"],["What Really Happens When You Master {Topic}: {N} Insights","bs"],["The Hidden Mechanics of {Topic}, Explained in {N} Steps","bs"],
+["{Topic}: A Timeline of {N} Key Milestones","tl"],["{N} Ways {Topic} Has Evolved Over the Years","tl"],["{Topic} Then and Now: {N} Things That Changed","tl"],["{N} {Topic} Habits Worth Building Today","hb"],
+["Small {Topic} Habits That Add Up Fast","hb"],["Build a Better {Topic} Routine in {N} Steps","hb"],["{Topic} on a Budget: {N} Ways to Save","bd"],["Affordable {Topic} Options That Still Deliver","bd"],
+["How to Do {Topic} Without Breaking the Bank","bd"],["{Topic} for Every Season: {N} Ideas for a Year-Round Guide","yr"],["{N} Things to Know About {Topic} This Time of Year","yr"],["{Topic} Throughout the Year: {N} Things to Know","yr"],
+["The {Topic} Toolkit: {N} Tools Worth Having","tk"],["Essential Tools for Getting Started With {Topic}","tk"],["{N} Tools That Make {Topic} Easier","tk"],["{Topic} Community Spotlight: {N} Real Stories","cm"],
+["What the {Topic} Community Gets Right About {Word}","cm"],["{N} Voices From the {Topic} Community","cm"],["{Topic} Red Flags to Watch Out For","rf"],["{N} Warning Signs in {Topic} You Shouldn't Ignore","rf"],
+["How to Spot Trouble With {Topic} Early","rf"],["{Topic} Success Stories Worth Reading","ss"],["How {Word} Turned {Topic} Into a Win","ss"],["Real {Topic} Wins You Can Learn From","ss"],
+["{Topic} Glossary: {N} Terms You Should Know","gl"],["Decoding {Topic} Jargon in Plain English","gl"],["A Quick {Topic} Vocabulary Cheat Sheet","gl"],["{Topic} on a Deadline: {N} Things to Prioritize","dl"],
+["Fast-Track Your {Topic} in {N} Days","dl"],["{Topic} When You're Short on Time: {N} Quick Wins","dl"],["{Topic} for Teams: {N} Tips for a Collaborative Approach","tm"],["{N} Ways to Get Your Whole Team Aligned on {Topic}","tm"],
+["{Topic} as a Group Effort: {N} Things That Work","tm"],["{N} {Topic} Frequently Asked Questions, Answered","fq"],["{N} {Topic} Questions Everyone Asks","fq"],["Clearing Up {N} Common {Topic} Points of Confusion","fq"],
+["{N} {Topic} Benchmarks: How Do You Compare?","bm"],["Where Your {Topic} Stacks Up Against {Word}","bm"],["{N} {Topic} Standards Worth Measuring Against","bm"],["{N} {Topic} Risks You Should Know About","rk"],
+["Weighing the {N} Risks and Rewards of {Topic}","rk"],["{N} Things That Could Go Wrong With {Topic}","rk"],["{Topic} Alternatives Worth Exploring","al"],["If Not {Topic}, Then What?","al"],
+["{N} {Topic} Alternatives Ranked","al"],["{Topic} Automation: Work Smarter, Not Harder","au"],["How to Automate the Boring Parts of {Topic}","au"],["{N} {Topic} Tasks You Can Automate Today","au"],
+["{Topic}: A Buyer's Guide for {Year} in {N} Steps","bg2"],["{N} Things to Look For Before Investing in {Topic}","bg2"],["{Topic} Shopping Guide: {N} Ways to Avoid Overpaying","bg2"],["{Topic} and {Word}: Where Do You Draw the Line?","et"],
+["{N} Ethical Questions About {Topic} Nobody Discusses","et"],["{Topic} and {Word}: The Question of Doing It Right","et"],["{Topic} Explained to a {N}-Year-Old","el"],["{Topic} and {Word}, But Make It Simple","el"],
+["The Plain-English Guide to {Topic} in {N} Steps","el"],["{Topic} Deep Cuts: What Most People Miss","dc"],["The Overlooked Details of {Topic}","dc"],["{N} {Topic} Details Even Pros Forget","dc"],
+["{Topic} Templates You Can Steal","tp"],["Ready-Made {Topic} Frameworks to Copy","tp"],["{N} {Topic} Templates Worth Saving","tp"],["{N} {Topic} Q&A: Real Questions From Readers","rq"],
+["You Asked, We Answered: {N} {Topic} Questions","rq"],["{N} Reader Questions About {Topic}, Answered","rq"],["{Topic} Cheat Sheet: {N} Quick Reference Points","cs2"],["Bookmark This {N}-Point {Topic} Quick-Reference Guide","cs2"],
+["The One-Page {Topic} Cheat Sheet: {N} Essentials","cs2"]
+];
+function titleCase(s){ return s.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.slice(1)); }
+const TONE_TEMPLATES = {
+  casual:["{N} Fun {Topic} Tips to Try This Week","{Topic}? Here's the Lowdown","Let's Talk {Topic}: {N} Things to Know","{Topic} Made Simple, No Jargon","{N} {Topic} Hacks I Swear By"], professional:["A Strategic Overview of {Topic}","{N} Key Considerations for {Topic}","{Topic}: Best Practices for {Year}","An Evidence-Based Approach to {Topic}","{N} Frameworks for Effective {Topic}"],
+  playful:["{N} Wildly Fun Facts About {Topic}","{Topic}: Buckle Up for {N} Surprises","Who Knew {Topic} Could Be This Fun?","{N} Delightfully Weird {Topic} Ideas","{N} {Topic} Ideas That'll Make You Smile"], academic:["An Analysis of {Topic}: {N} Key Findings","{Topic}: A Critical Examination","Toward a Deeper Understanding of {Topic}","{N} Theoretical Perspectives on {Topic}","Examining the Foundations of {Topic}"],
+  inspirational:["{Topic}: {N} Ways to Rise Above Your Limits","Find Your Purpose Through {Topic}","{Topic} Can Change Your Life — Here's How"], humorous:["{Topic}: Because Adulting Is Hard Enough","{N} {Topic} Fails That'll Make You Laugh","{Topic} 101: A Slightly Ridiculous Guide"],
+  urgent:["Act Now: {N} {Topic} Moves You Can't Delay","Why {Topic} Can't Wait Any Longer","{Topic}: The Clock Is Ticking"], empathetic:["It's Okay to Struggle With {Topic} — Here's Help","A Gentle Guide to {Topic}","You're Not Alone in Your {Topic} Journey"],
+  bold:["{Topic} Isn't Optional Anymore","Stop Playing It Safe With {Topic}","{Topic}: Go Big or Go Home"], minimalist:["{Topic}, Simplified","Less Noise, More {Topic}","{Topic}: Just the Essentials"],
+  storytelling:["The Untold Story of {Topic}","Once Upon a {Topic}: {N} Lessons Learned","A Tale of {Topic} and {Word}"], skeptical:["Is {Topic} Really as Good as They Say?","{Topic}: Separating Hype From Reality","{N} Questions to Ask Before Trusting {Topic}"],
+  authoritative:["The Definitive Guide to {Topic}","{Topic}: What the Experts Actually Say","{N} Rules of {Topic} You Shouldn't Ignore"], friendly:["Hey, Let's Chat About {Topic}","A Friendly Intro to {Topic}","{Topic} Made Easy — No Pressure"],
+  witty:["{Topic}: Because Winging It Wasn't Working","{N} {Topic} Truths, Served With a Side of Sarcasm","{Topic} — Now With 100% Less Boring"], curious:["What Happens When You Really Dig Into {Topic}?","{Topic}: The Questions Worth Asking","I Went Down the {Topic} Rabbit Hole — Here's What I Found"],
+  blunt:["{Topic}: The Straight Talk Nobody Gives You","No Fluff, Just {Topic} Facts","{Topic} — Here's What Actually Matters"], nostalgic:["{Topic} the Way It Used to Be","Remember When {Topic} Was Simple?","A Look Back at {Topic} and How It's Changed"],
+  edgy:["{Topic} Isn't for the Faint of Heart","{Topic}: Rules Are Meant to Be Broken","Forget the Playbook — {Topic} Your Own Way"], reassuring:["You've Got This: {Topic} Made Manageable","{Topic} Doesn't Have to Be Overwhelming","A Calm, Steady Guide to {Topic}"],
+  provocative:["Is {Topic} Actually Ruining Things?","{Topic}: The Uncomfortable Truth","Why {Topic} Deserves More Criticism"], whimsical:["{Topic}: A Little Bit Magical, A Little Bit Weird","Once Upon a {Word}: A {Topic} Tale","{Topic}, Sprinkled With a Bit of Wonder"],
+  formal:["An Examination of {Topic} and Its Implications","{Topic}: A Formal Overview","On the Subject of {Topic}"], conversational:["So, Let's Talk About {Topic} for a Second","Okay, Here's the Deal With {Topic}","{Topic} — Just You, Me, and the Basics"],
+  confident:["{Topic}, Handled Like a Pro","Master {Topic} Without Second-Guessing Yourself","{Topic}: Own It From Day One"], poetic:["{Topic}: A Quiet Kind of Magic","The Art and Soul of {Topic}","{Topic}, Woven Into Everyday Life"],
+  analytical:["{Topic} by the Data: What the Numbers Reveal","A Structured Breakdown of {Topic}","{Topic}: Patterns, Trends, and What They Mean"], sarcastic:["Oh Great, Another {Topic} Guide","{Topic}: Because Clearly We Needed More Advice","Sure, {Topic} Is 'Easy' — Said No One Ever"],
+  encouraging:["You Can Absolutely Master {Topic}","Small Steps, Big Wins: Your {Topic} Journey","{Topic} Is Closer Than You Think"]
+};
+const LANG_TEMPLATES = {
+  hi:["{Topic} के बारे में {N} जरूरी बातें","{Topic}: शुरुआती लोगों के लिए पूरी गाइड","{Topic} की सच्चाई जो कोई नहीं बताता","{N} तरीके जिनसे {Topic} बदल सकता है आपकी जिंदगी","{Topic} में {Year} के बड़े बदलाव","{Topic}: आसान भाषा में समझें","{N} गलतियां जो {Topic} में न करें","{Topic} पर एक ईमानदार राय","{Topic} सीखने के {N} आसान तरीके","{Topic}: विशेषज्ञों की सलाह","{Topic} से जुड़े {N} रोचक तथ्य","{Topic}: क्यों है यह इतना जरूरी"],
+  bn:["{Topic} সম্পর্কে {N}টি গুরুত্বপূর্ণ বিষয়","{Topic}: শুরু করার সম্পূর্ণ গাইড","{Topic} নিয়ে যে সত্যি কেউ বলে না","{N}টি উপায় যা {Topic} বদলে দিতে পারে","{Topic}-এ {Year} সালের বড় পরিবর্তন","{Topic}: সহজ ভাষায় ব্যাখ্যা","{Topic} নিয়ে {N}টি ভুল এড়িয়ে চলুন","{Topic} নিয়ে একটি সৎ মতামত","{Topic} শেখার {N}টি সহজ উপায়","{Topic}: বিশেষজ্ঞদের পরামর্শ","{Topic} সম্পর্কিত {N}টি আকর্ষণীয় তথ্য","{Topic}: এটি কেন এত গুরুত্বপূর্ণ"]
+};
+const META_TEMPLATES = [
+"Discover practical insights on {Topic} and learn how to apply them today.","A closer look at {Topic}: key ideas, tips, and what to expect in {Year}.","Explore {Topic} through simple, actionable guidance anyone can follow.","Everything you need to know about {Topic}, explained clearly and concisely.",
+"A quick, practical guide to {Topic} for readers who want real results.","Learn what matters most about {Topic} without the fluff.","An easy breakdown of {Topic} for beginners and pros alike.","Get the essential facts on {Topic}, backed by clear, useful examples."
+];
+function buildMeta(topic){
+  const Topic = titleCase(topic.trim());
+  const year = new Date().getFullYear();
+  const tpl = META_TEMPLATES[Math.floor(Math.random()*META_TEMPLATES.length)];
+  return tpl.replace(/{Topic}/g, Topic).replace(/{Year}/g, year);
+}
+const POWER_WORDS = {
+  1:['Proven','Essential','Practical','Smart','Reliable'],
+  2:['Ultimate','Shocking','Insane','Unbelievable','Jaw-Dropping','Secret']
+};
+function applyIntensity(title, level){
+  if(level === '0' || level === 0) return title;
+  const words = POWER_WORDS[level];
+  const w = words[Math.floor(Math.random()*words.length)];
+  return /^(the|a|an)\s/i.test(title) ? title.replace(/^(the|a|an)\s/i, m => m + w + ' ') : w + ': ' + title;
+}
+function applyCase(title, style){
+  if(style === 'upper') return title.toUpperCase();
+  if(style === 'title') return titleCase(title);
+  if(style === 'sentence'){
+    const lower = title.toLowerCase();
+    return lower.replace(/(^\s*\w|[.!?]\s*\w)/g, c => c.toUpperCase());
+  }
+  return title;
+}
+function slugify(title){
+  return title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-');
+}
+function highlightKeyword(html, topic){
+  const words = topic.trim().split(/\s+/).filter(w=>w.length>2);
+  let out = html;
+  words.forEach(w => {
+    const esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    out = out.replace(new RegExp('\\b(' + esc + ')\\b','gi'), '<mark>$1</mark>');
+  });
+  return out;
+}
+function strengthScore(title, topic){
+  let score = 0;
+  if(title.length >= 45 && title.length <= 65) score += 35;
+  else if(title.length >= 30 && title.length <= 90) score += 20;
+  if(/\d/.test(title)) score += 20;
+  const lower = title.toLowerCase();
+  if([...POWER_WORDS[1], ...POWER_WORDS[2]].some(w => lower.includes(w.toLowerCase()))) score += 20;
+  if(lower.includes(topic.trim().toLowerCase().split(/\s+/)[0])) score += 25;
+  return Math.min(100, score);
+}
+function strengthMeter(title, topic){
+  const s = strengthScore(title, topic);
+  const color = s >= 70 ? 'var(--accent)' : s >= 40 ? 'var(--warn)' : 'var(--card-line)';
+  const label = s >= 70 ? 'Strong' : s >= 40 ? 'Fair' : 'Weak';
+  return `<div class="strength"><div class="strength-bar"><span style="width:${s}%; background:${color};"></span></div><span class="strength-label">${label}</span></div>`;
+}
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr;
+}
+async function fetchRelatedWords(topic, category){
+  const q = category !== 'general' ? topic + ' ' + category : topic;
+  const bank = (CATEGORIES[category] || CATEGORIES.general).words;
+  try{
+    const res = await fetch('https://api.datamuse.com/words?ml=' + encodeURIComponent(q) + '&max=10');
+    if(!res.ok) throw new Error('bad response');
+    const data = await res.json();
+    const words = data.map(d=>d.word).filter(w => /^[a-zA-Z]+$/.test(w) && w.length >= 3 && w.length <= 12);
+    const merged = Array.from(new Set([...words, ...bank, ...FILLER_WORDS]));
+    return merged.length ? merged : CATEGORIES.general.words;
+  }catch(e){
+    return Array.from(new Set([...bank, ...FILLER_WORDS]));
+  }
+}
+const LENGTH_RANGES = {
+  any:[0,9999], ultrashort:[0,30], brief:[30,40], short:[0,50], compact:[40,50],
+  medium:[50,65], standard:[65,80], long:[51,9999], extended:[80,95],
+  descriptive:[95,110], detailed:[110,130], verylong:[130,150], maximal:[150,9999]
+};
+const EXT_SHORT = [
+  ' — A Complete Guide', ' for Beginners and Beyond', ' — Everything You Need to Know',
+  ' — Tips, Tricks, and Expert Advice', ' — A Step-by-Step Walkthrough', ' Explained Clearly for Every Skill Level'
+];
+const EXT_LONG = [
+  ' — A Complete, In-Depth Guide Covering Everything You Need to Know, From the Basics to Advanced Strategies',
+  ' — The Ultimate Resource With Practical Tips, Real Examples, and Expert Advice for Every Skill Level',
+  ' — Everything You Need to Know, Step by Step, With Insights Straight From the Experts'
+];
+function extendToLength(title, range, year){
+  if(title.length >= range[0]) return title;
+  const gap = range[0] - title.length;
+  const first = shuffle((gap > 55 ? EXT_LONG : EXT_SHORT).slice());
+  for(const e of first){
+    const combo = title + e.replace('{Year}', year);
+    if(combo.length >= range[0] && combo.length <= range[1]) return combo;
+  }
+  const shortPool = shuffle(EXT_SHORT.slice());
+  for(const e1 of shortPool){
+    for(const e2 of shortPool){
+      if(e1 === e2) continue;
+      const combo = title + e1 + e2;
+      if(combo.length >= range[0] && combo.length <= range[1]) return combo;
+    }
+  }
+  const longPool = shuffle(EXT_LONG.slice());
+  for(const eLong of longPool){
+    for(const eShort of shortPool){
+      const combo = title + eLong.replace('{Year}', year) + eShort;
+      if(combo.length >= range[0] && combo.length <= range[1]) return combo;
+    }
+  }
+  return title;
+}
+const FILLER_WORDS = [
+  'Strategy','Approach','Method','Practice','Habit','Skill','Mindset','Journey','Craft','Focus',
+  'Balance','Routine','Insight','Progress','Discipline','Momentum','Growth','Clarity','Vision','Impact'
+];
+const SYNONYM_GROUPS = [
+  ['Tips','Ideas','Strategies','Pointers','Techniques'],
+  ['Secrets','Insights'],
+  ['Mistakes','Pitfalls','Errors'],
+  ['Guide','Playbook','Roadmap'],
+  ['Lessons','Takeaways'],
+  ['Rules','Principles','Guidelines'],
+  ['Reasons','Factors'],
+  ['Steps','Stages'],
+  ['Tools','Resources'],
+  ['Explained','Simplified','Demystified'],
+  ['Answered','Covered'],
+  ['Today','Right Now'],
+  ['Experts','Professionals','Pros'],
+  ['Myths','Misconceptions'],
+  ['Predictions','Forecasts'],
+  ['Trends','Shifts'],
+  ['Hacks','Shortcuts'],
+  ['Questions','Queries'],
+  ['Checklist','To-Do List'],
+  ['Ways','Methods','Approaches']
+];
+function synonymSwap(title){
+  let result = title;
+  SYNONYM_GROUPS.forEach(group => {
+    const [primary, ...alts] = group;
+    const re = new RegExp('\\b' + primary + '\\b');
+    if(re.test(result) && Math.random() < 0.75){
+      const pick = alts[Math.floor(Math.random()*alts.length)];
+      result = result.replace(re, pick);
+    }
+  });
+  return result;
+}
+function isStaticTemplate(tpl){
+  return !tpl.includes('{Word}') && !tpl.includes('{N}');
+}
+const STATIC_BOOST_SUFFIXES = [
+  ' — Especially for {Word}', ', With a Focus on {Word}', ' and What It Means for Your {Word}',
+  ' (Plus: {Word} Tips Worth Trying)', ' — A Closer Look at {Word}', ', From a {Word} Perspective',
+  ' — Including {Word} Insights', ', Tailored for {Word}', ' — With {Word} in Mind', ', Featuring Real {Word} Examples'
+];
+function boostStatic(title, tpl, words, range){
+  if(range[1] < 70 || range[0] >= 95) return title;
+  const hasWord = tpl.includes('{Word}');
+  const hasNumber = tpl.includes('{N}');
+  const forced = !hasWord && !hasNumber;
+  if(!forced && hasWord && hasNumber) return title;
+  if(!forced && Math.random() >= 0.7) return title;
+  const suffix = STATIC_BOOST_SUFFIXES[Math.floor(Math.random()*STATIC_BOOST_SUFFIXES.length)];
+  const w2 = titleCase(words[Math.floor(Math.random()*words.length)]);
+  const combo = title + suffix.replace('{Word}', w2);
+  return combo.length <= range[1] ? combo : title;
+}
+function genOne(topic, words, opts, used){
+  const Topic = titleCase(topic.trim());
+  const year = new Date().getFullYear();
+  const nums = [3,4,5,6,7,8,9,10,11,12,13,14,15,17,20,25,30,50];
+  let pool;
+  if(opts.lang && opts.lang !== 'en'){
+    pool = LANG_TEMPLATES[opts.lang].map(t=>[t,'x']);
+  } else if(opts.tone !== 'any' && opts.style === 'any'){
+    pool = TONE_TEMPLATES[opts.tone].map(t=>[t,'t']);
+  } else {
+    pool = opts.style === 'any' ? TEMPLATES.slice() : TEMPLATES.filter(x=>x[1]===opts.style);
+  }
+  if(!pool.length) pool = TEMPLATES.slice();
+  pool = shuffle(pool);
+  const range = LENGTH_RANGES[opts.length] || LENGTH_RANGES.any;
+  for(let i=0;i<pool.length;i++){
+    const tpl = pool[i][0];
+    const word = titleCase(words[Math.floor(Math.random()*words.length)]);
+    const n = nums[Math.floor(Math.random()*nums.length)];
+    let title = tpl.replace(/{Topic}/g, Topic).replace(/{Word}/g, word).replace(/{N}/g, n).replace(/{Year}/g, year);
+    title = synonymSwap(title);
+    title = boostStatic(title, tpl, words, range);
+    title = extendToLength(title, range, year);
+    if(used.has(title)) continue;
+    if(title.length < range[0] || title.length > range[1]) continue;
+    const lower = title.toLowerCase();
+    if(opts.exclude.some(w => w && lower.includes(w))) continue;
+    return {title, tpl};
+  }
+  return null;
+}
+let currentTitles = [];
+let favorites = [];
+let favTpl = [];
+let cardTopics = [];
+let cardMeta = [];
+let cardTpl = [];
+let cardDates = [];
+let cardAlt = [];
+let cardAltShown = [];
+let genHistory = [];
+let seenTitles = new Set();
+let lastOpts = {style:'any', length:'any', exclude:[], tone:'any', lang:'en'};
+let lastWordsByTopic = {};
+let stats = {totalGenerated:0, regenCount:0, styleCounts:{}, categoryCounts:{}};
+function renderStats(){
+  const el = document.getElementById('statsPanel');
+  if(!stats.totalGenerated){ el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const topStyle = Object.entries(stats.styleCounts).sort((a,b)=>b[1]-a[1])[0];
+  const topCat = Object.entries(stats.categoryCounts).sort((a,b)=>b[1]-a[1])[0];
+  el.innerHTML = `<div class="saved-head">Session Stats</div><div class="stats-line">Generated: ${stats.totalGenerated} · Regenerated: ${stats.regenCount} · Saved: ${favorites.length}<br>Top style: ${topStyle ? topStyle[0] : '—'} · Top category: ${topCat ? topCat[0] : '—'}</div>`;
+}
+function toggleHistory(){
+  const panel = document.getElementById('historyPanel');
+  const show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if(show) renderHistory();
+}
+function renderHistory(){
+  const list = document.getElementById('historyList');
+  if(!genHistory.length){ list.innerHTML = '<div class="stats-line">No batches yet this session.</div>'; return; }
+  list.innerHTML = genHistory.slice().reverse().map((h,ri) => {
+    const i = genHistory.length - 1 - ri;
+    return `<div class="saved-item hist-item" onclick="reloadHistory(${i})"><span>${escapeHtml(h.topic)} · ${h.count} titles · ${h.time}</span><button onclick="event.stopPropagation(); reloadHistory(${i})">Reload</button></div>`;
+  }).join('');
+}
+function reloadHistory(i){
+  const h = genHistory[i];
+  if(!h) return;
+  document.getElementById('topic').value = h.topic;
+  document.getElementById('style').value = h.style;
+  document.getElementById('length').value = h.length;
+  document.getElementById('category').value = h.category;
+  document.getElementById('tone').value = h.tone;
+  document.getElementById('lang').value = h.lang;
+  generate();
+}
+function charBadge(t){
+  const n = t.length;
+  return n > 60 ? `<span class="chars warn">${n} chars — trim for SEO</span>` : `<span class="chars">${n} chars</span>`;
+}
+function renderTitles(titles){
+  const feed = document.getElementById('feed');
+  if(!titles.length){
+    feed.innerHTML = '<div class="empty">No headlines yet. Try different filters.</div>';
+    return;
+  }
+  feed.innerHTML = titles.map((t,idx) => {
+    const topic = cardTopics[idx] || '';
+    const highlighted = highlightKeyword(escapeHtml(t), topic);
+    const showAlt = cardAltShown[idx] && cardAlt[idx];
+    return `
+    <div class="card">
+      ${cardDates[idx] ? `<div class="cal-date">${cardDates[idx]}</div>` : ''}
+      <div class="card-top">
+        <div class="eyebrow">Headline · ${charBadge(t)}</div>
+        <div class="card-icons">
+          <button class="icon-btn" onclick="toggleAlt(${idx})" title="A/B variant">⇄</button>
+          <button class="icon-btn" onclick="regenerateOne(${idx})" title="Regenerate this one">⟳</button>
+          <button class="star ${favorites.includes(t)?'active':''}" onclick="toggleFavorite(${idx})" title="Save">${favorites.includes(t)?'★':'☆'}</button>
+        </div>
+      </div>
+      <p>${highlighted}</p>
+      ${strengthMeter(t, topic)}
+      <div class="slug">/${slugify(t)}</div>
+      ${cardMeta[idx] ? `<p class="meta">${escapeHtml(cardMeta[idx])}</p>` : ''}
+      ${showAlt ? `<div class="altline">Variant B: <b>${escapeHtml(cardAlt[idx])}</b></div>` : ''}
+      <button class="copy" onclick="copyOne(this, ${idx})">Copy</button>
+    </div>
+  `;}).join('');
+}
+function toggleAlt(idx){
+  if(!cardAlt[idx]){
+    const topic = cardTopics[idx];
+    const words = lastWordsByTopic[topic];
+    if(!words){ document.getElementById('status').textContent = 'Generate a batch first.'; return; }
+    const used = new Set(currentTitles);
+    const intensity = document.getElementById('intensity').value;
+    const caseStyle = document.getElementById('caseStyle').value;
+    let altTitle = null;
+    for(let i=0;i<8;i++){
+      const candidate = genOne(topic, words, lastOpts, used);
+      if(!candidate) break;
+      used.add(candidate.title);
+      let t = applyIntensity(candidate.title, intensity);
+      t = applyCase(t, caseStyle);
+      if(!seenTitles.has(t)){ altTitle = t; break; }
+    }
+    if(!altTitle){ document.getElementById('status').textContent = 'No alternate variant found.'; return; }
+    seenTitles.add(altTitle);
+    cardAlt[idx] = altTitle;
+  }
+  cardAltShown[idx] = !cardAltShown[idx];
+  renderTitles(currentTitles);
+}
+function regenerateOne(idx){
+  const topic = cardTopics[idx];
+  const words = lastWordsByTopic[topic];
+  const status = document.getElementById('status');
+  if(!words){ status.textContent = 'Generate a batch first.'; return; }
+  const used = new Set(currentTitles);
+  const intensity = document.getElementById('intensity').value;
+  const caseStyle = document.getElementById('caseStyle').value;
+  let finalTitle = null, fresh = null;
+  for(let i=0;i<8;i++){
+    const candidate = genOne(topic, words, lastOpts, used);
+    if(!candidate) break;
+    used.add(candidate.title);
+    let t = applyIntensity(candidate.title, intensity);
+    t = applyCase(t, caseStyle);
+    if(!seenTitles.has(t)){ finalTitle = t; fresh = candidate; break; }
+  }
+  if(!finalTitle){ status.textContent = 'No fresh variant found — adjust filters and try again.'; return; }
+  seenTitles.add(finalTitle);
+  currentTitles[idx] = finalTitle;
+  cardTpl[idx] = fresh.tpl;
+  cardAlt[idx] = null;
+  cardAltShown[idx] = false;
+  if(document.getElementById('metaToggle').checked) cardMeta[idx] = buildMeta(topic);
+  stats.regenCount++;
+  renderTitles(currentTitles);
+  renderStats();
+}
+function renderSaved(){
+  const section = document.getElementById('savedSection');
+  const list = document.getElementById('savedList');
+  document.getElementById('savedCount').textContent = favorites.length;
+  if(!favorites.length){ section.style.display='none'; return; }
+  section.style.display='block';
+  const tplCounts = {};
+  favTpl.forEach(t => { if(t) tplCounts[t] = (tplCounts[t]||0) + 1; });
+  list.innerHTML = favorites.map((t,i) => {
+    const dup = favTpl[i] && tplCounts[favTpl[i]] > 1;
+    return `
+    <div class="saved-item">
+      <span>${escapeHtml(t)}${dup ? ' <span class="dup-flag" title="Similar structure to another saved title">⚠</span>' : ''}</span>
+      <button onclick="showOutline(${i})">Outline</button>
+      <button onclick="copySaved(${i})">Copy</button>
+      <button onclick="removeSaved(${i})">✕</button>
+    </div>
+  `;}).join('');
+}
+function buildOutline(title){
+  return [
+    `H1: ${title}`,
+    'Intro — hook the reader and preview what they\'ll learn',
+    'Section 1 — the fundamentals / why it matters',
+    'Section 2 — step-by-step approach or key strategies',
+    'Section 3 — common mistakes to avoid',
+    'Conclusion — recap and a clear call-to-action'
+  ].join('\n');
+}
+function showOutline(i){
+  showManualCopy(buildOutline(favorites[i]));
+  document.getElementById('manualHint').textContent = 'Outline generated — tap to copy';
+}
+function toggleFavorite(idx){
+  const t = currentTitles[idx];
+  const i = favorites.indexOf(t);
+  if(i === -1){ favorites.push(t); favTpl.push(cardTpl[idx] || ''); }
+  else { favorites.splice(i,1); favTpl.splice(i,1); }
+  renderTitles(currentTitles);
+  renderSaved();
+  renderStats();
+}
+function removeSaved(i){ favorites.splice(i,1); favTpl.splice(i,1); renderTitles(currentTitles); renderSaved(); renderStats(); }
+function copySaved(i){ copyText(favorites[i]).catch(()=> showManualCopy(favorites[i])); }
+function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function copyText(text){
+  if(navigator.clipboard && window.isSecureContext){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve, reject)=>{
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    try{
+      const ok = document.execCommand('copy');
+      ok ? resolve() : reject(new Error('copy failed'));
+    }catch(err){ reject(err); }
+    finally{ document.body.removeChild(ta); }
+  });
+}
+function showManualCopy(text){
+  const box = document.getElementById('manualBox');
+  const area = document.getElementById('manualArea');
+  const hint = document.getElementById('manualHint');
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  hint.textContent = isTouch ? 'Clipboard blocked — tap the text, then tap Copy' : 'Clipboard blocked — text selected, press Ctrl/Cmd+C';
+  area.value = text;
+  box.style.display = 'block';
+  area.focus(); area.select();
+  if(isTouch && area.setSelectionRange) area.setSelectionRange(0, text.length);
+}
+function closeManual(){ document.getElementById('manualBox').style.display = 'none'; }
+function copyOne(btn, idx){
+  const text = currentTitles[idx];
+  copyText(text).then(()=>{
+    btn.textContent='Copied'; btn.classList.add('copied');
+    setTimeout(()=>{ btn.textContent='Copy'; btn.classList.remove('copied'); }, 1400);
+  }).catch(()=>{
+    showManualCopy(text);
+    btn.textContent='Selected';
+    setTimeout(()=>{ btn.textContent='Copy'; }, 1400);
+  });
+}
+function copyAll(){
+  const status = document.getElementById('status');
+  if(!currentTitles.length){ status.textContent='Generate headlines first.'; return; }
+  const text = currentTitles.join('\n');
+  copyText(text).then(()=>{
+    status.textContent='All headlines copied to clipboard.';
+    setTimeout(()=>{ status.textContent='\u00A0'; }, 2000);
+  }).catch(()=>{
+    showManualCopy(text);
+    status.textContent='Clipboard blocked — copy manually from the box below.';
+  });
+}
+function downloadBlob(content, filename, mime){
+  const blob = new Blob([content], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function exportTxt(){
+  const status = document.getElementById('status');
+  if(!currentTitles.length){ status.textContent='Generate headlines first.'; return; }
+  const lines = currentTitles.map((t,i) => cardMeta[i] ? t + '\n' + cardMeta[i] : t);
+  downloadBlob(lines.join('\n\n'), 'titler-headlines.txt', 'text/plain');
+}
+function exportCsv(){
+  const status = document.getElementById('status');
+  if(!currentTitles.length){ status.textContent='Generate headlines first.'; return; }
+  const hasMeta = cardMeta.some(m=>m);
+  const header = hasMeta ? 'Title,Meta Description' : 'Title';
+  const rows = currentTitles.map((t,i) => hasMeta
+    ? `"${t.replace(/"/g,'""')}","${(cardMeta[i]||'').replace(/"/g,'""')}"`
+    : `"${t.replace(/"/g,'""')}"`);
+  downloadBlob(header + '\n' + rows.join('\n'), 'titler-headlines.csv', 'text/csv');
+}
+function handleCsv(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let topics = String(reader.result).split(/\r?\n/).map(line => line.split(',')[0].trim()).filter(Boolean);
+    if(topics.length && /^(topic|title|keyword)s?$/i.test(topics[0])) topics.shift();
+    topics = topics.slice(0, 30);
+    document.getElementById('topic').value = topics.join(', ');
+    document.getElementById('status').textContent = topics.length + ' topics imported from CSV.';
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+function buildShareLink(){
+  const p = new URLSearchParams();
+  p.set('topic', document.getElementById('topic').value);
+  p.set('count', document.getElementById('count').value);
+  p.set('style', document.getElementById('style').value);
+  p.set('length', document.getElementById('length').value);
+  p.set('category', document.getElementById('category').value);
+  p.set('tone', document.getElementById('tone').value);
+  p.set('lang', document.getElementById('lang').value);
+  p.set('exclude', document.getElementById('exclude').value);
+  p.set('meta', document.getElementById('metaToggle').checked ? '1' : '0');
+  return location.origin + location.pathname + '?' + p.toString();
+}
+function shareLink(){
+  const url = buildShareLink();
+  copyText(url).then(() => {
+    document.getElementById('status').textContent = 'Link copied — share it anywhere.';
+  }).catch(() => showManualCopy(url));
+}
+function loadFromQuery(){
+  const p = new URLSearchParams(location.search);
+  if(!p.has('topic')) return;
+  document.getElementById('topic').value = p.get('topic') || '';
+  if(p.get('count')) document.getElementById('count').value = p.get('count');
+  if(p.get('style')) document.getElementById('style').value = p.get('style');
+  if(p.get('length')) document.getElementById('length').value = p.get('length');
+  if(p.get('category')) document.getElementById('category').value = p.get('category');
+  if(p.get('tone')) document.getElementById('tone').value = p.get('tone');
+  if(p.get('lang')) document.getElementById('lang').value = p.get('lang');
+  if(p.get('exclude')) document.getElementById('exclude').value = p.get('exclude');
+  if(p.get('meta') === '1') document.getElementById('metaToggle').checked = true;
+  generate();
+}
+function getCalendarDates(n){
+  const startVal = document.getElementById('calStart').value;
+  const start = startVal ? new Date(startVal + 'T00:00:00') : new Date();
+  const dates = [];
+  for(let i=0;i<n;i++){
+    const d = new Date(start); d.setDate(d.getDate() + i);
+    dates.push(d.toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}));
+  }
+  return dates;
+}
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if(!(window.matchMedia('(display-mode: standalone)').matches)) document.getElementById('installBanner').style.display = 'flex';
+});
+function installApp(){
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(() => { deferredInstallPrompt = null; dismissInstall(); });
+}
+function dismissInstall(){ document.getElementById('installBanner').style.display = 'none'; }
+if(/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.navigator.standalone){
+  document.getElementById('installMsg').textContent = 'Tap Share, then "Add to Home Screen" to install Titler.';
+  document.getElementById('installBanner').querySelector('button').remove();
+  document.getElementById('installBanner').style.display = 'flex';
+}
+function resetAll(){
+  document.getElementById('topic').value = '';
+  document.getElementById('count').value = '8';
+  document.getElementById('style').value = 'any';
+  document.getElementById('length').value = 'any';
+  document.getElementById('category').value = 'general';
+  document.getElementById('tone').value = 'any';
+  document.getElementById('lang').value = 'en';
+  document.getElementById('calSpan').value = '0';
+  document.getElementById('calStart').value = '';
+  document.getElementById('csvFile').value = '';
+  document.getElementById('intensity').value = '0';
+  document.getElementById('caseStyle').value = 'title';
+  document.getElementById('metaToggle').checked = false;
+  document.getElementById('exclude').value = '';
+  document.getElementById('status').innerHTML = '&nbsp;';
+  currentTitles = []; cardTopics = []; cardMeta = []; cardTpl = []; cardDates = []; cardAlt = []; cardAltShown = [];
+  renderTitles([]);
+  document.getElementById('topic').focus();
+}
+async function generate(){
+  const topicInput = document.getElementById('topic');
+  const raw = topicInput.value.trim();
+  const calSpan = parseInt(document.getElementById('calSpan').value, 10);
+  const count = calSpan > 0 ? calSpan : parseInt(document.getElementById('count').value, 10);
+  const style = document.getElementById('style').value;
+  const length = document.getElementById('length').value;
+  const category = document.getElementById('category').value;
+  const tone = document.getElementById('tone').value;
+  const lang = document.getElementById('lang').value;
+  const intensity = document.getElementById('intensity').value;
+  const caseStyle = document.getElementById('caseStyle').value;
+  const includeMeta = document.getElementById('metaToggle').checked;
+  const exclude = document.getElementById('exclude').value.toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
+  const status = document.getElementById('status');
+  const topics = raw.split(',').map(s=>s.trim()).filter(Boolean);
+  if(!topics.length){ status.textContent = 'Enter a topic first, e.g. "home gardening".'; topicInput.focus(); return; }
+  status.textContent = topics.length > 1 ? `Pulling related words for ${topics.length} topics...` : 'Pulling related words from the press...';
+  const btn = document.querySelector('.btn-primary');
+  btn.disabled = true;
+  const wordsByTopic = {};
+  for(const t of topics){ wordsByTopic[t] = await fetchRelatedWords(t, category); }
+  lastOpts = {style, length, exclude, tone, lang};
+  lastWordsByTopic = wordsByTopic;
+  currentTitles = []; cardTopics = []; cardMeta = []; cardTpl = []; cardAlt = []; cardAltShown = [];
+  const used = new Set();
+  let ti = 0, attempts = 0;
+  while(currentTitles.length < count && attempts < count * topics.length * 8){
+    const topic = topics[ti % topics.length]; ti++; attempts++;
+    const fresh = genOne(topic, wordsByTopic[topic], lastOpts, used);
+    if(fresh){
+      let finalTitle = applyIntensity(fresh.title, intensity);
+      finalTitle = applyCase(finalTitle, caseStyle);
+      used.add(fresh.title);
+      if(seenTitles.has(finalTitle)) continue;
+      seenTitles.add(finalTitle);
+      currentTitles.push(finalTitle);
+      cardTpl.push(fresh.tpl);
+      cardTopics.push(topic);
+      cardMeta.push(includeMeta ? buildMeta(topic) : null);
+    }
+  }
+  cardDates = calSpan > 0 ? getCalendarDates(currentTitles.length) : [];
+  renderTitles(currentTitles);
+  stats.totalGenerated += currentTitles.length;
+  stats.styleCounts[style] = (stats.styleCounts[style] || 0) + 1;
+  stats.categoryCounts[category] = (stats.categoryCounts[category] || 0) + 1;
+  renderStats();
+  genHistory.push({topic: raw, style, length, category, tone, lang, count: currentTitles.length, time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})});
+  if(genHistory.length > 10) genHistory.shift();
+  if(document.getElementById('historyPanel').style.display !== 'none') renderHistory();
+  status.textContent = currentTitles.length === 0
+    ? 'No new headlines for that combination — either it can\u2019t reach that length, or you\u2019ve already generated everything possible for this setup this session. Try different filters.'
+    : currentTitles.length < count
+    ? currentTitles.length + ' headlines ready (try loosening filters for more).'
+    : currentTitles.length + ' headlines ready.';
+  btn.disabled = false;
+}
+document.getElementById('topic').addEventListener('keydown', e=>{ if(e.key === 'Enter') generate(); });
+if('serviceWorker' in navigator && !/claude|anthropic/i.test(location.hostname) && location.protocol !== 'about:'){
+  window.addEventListener('load', ()=> navigator.serviceWorker.register('service-worker.js').catch(()=>{}));
+}
+loadFromQuery();
+</script>
+</body>
+</html>
