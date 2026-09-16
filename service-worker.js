@@ -1,4 +1,4 @@
-const CACHE_NAME = 'titler-v15';
+const CACHE_NAME = 'titler-v17';
 const APP_SHELL = [
   './index.html',
   './manifest.json',
